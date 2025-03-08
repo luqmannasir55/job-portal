@@ -10,7 +10,7 @@ class JobTypeSeeder extends Seeder
     public function run()
     {
         $batchSize = 1000; // Insert in batches to optimize performance
-        $totalRecords = 100000; // 100K rows
+        $totalRecords = 500000; // 500K rows
 
         // Get the last sort_order from the database
         $lastSortOrder = JobType::max('sort_order') ?? 0;
