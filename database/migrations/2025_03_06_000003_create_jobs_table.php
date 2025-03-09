@@ -42,7 +42,7 @@ return new class extends Migration {
             $table->timestamp('deleted')->nullable();
         });
 
-        DB::statement("ALTER TABLE jobs ADD FULLTEXT(name, description, detail, business_skill, knowledge, location, activity)");
+        DB::statement("ALTER TABLE jobs ADD FULLTEXT(name, description, detail, business_skill, knowledge, location, activity, salary_statistic_group, salary_range_remarks, restriction, remarks)");
         //apply full text index
     }
 

@@ -16,6 +16,13 @@ class JobTypeSeeder extends Seeder
         $lastSortOrder = JobType::max('sort_order') ?? 0;
         $lastJobCategoryId = 1; // Start job_category_id sequentially
 
+        $arrRandom = [
+            'Full-Time', 'Part-Time', 'Freelance', 'Internship', 'Contract', 
+            'Remote', 'On-Site', 'Temporary', 'Commission-Based', 'Volunteer'
+        ];
+
+        $bKeywordSeeded = false;
+
         for ($i = 0; $i < $totalRecords / $batchSize; $i++) {
             $jobTypes = [];
 
@@ -26,9 +33,17 @@ class JobTypeSeeder extends Seeder
                 if ($lastSortOrder % 10 == 0) {
                     $lastJobCategoryId++; // Every 10 job types, increment category
                 }
+                
+                $name = '';
+                if (!$bKeywordSeeded) {//seed one keyword data
+                    $name =  "キャビンアテンダント Job Type";
+                    $bKeywordSeeded = true;
+                }
+                else //seed random name
+                    $name = $arrRandom[array_rand($arrRandom)];
 
                 $jobTypes[] = [
-                    'name' => 'Job Type ' . $lastSortOrder, // Logical naming
+                    'name' => $name, // Logical naming
                     'job_category_id' => $lastJobCategoryId, // Sequential category
                     'sort_order' => $lastSortOrder,
                     'created_by' => 1,

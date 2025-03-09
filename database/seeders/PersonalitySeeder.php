@@ -12,17 +12,30 @@ class PersonalitySeeder extends Seeder
         $batchSize = 1000; // Insert in batches for performance
         $totalRecords = 100000; // 100K rows
 
-        // Get the last sort_order from the database
-        $lastSortOrder = Personality::max('id') ?? 0;
+        $arrRandom = [
+            'Innovative', 'Charismatic', 'Resilient', 'Empathetic', 'Analytical', 
+            'Adventurous', 'Strategic', 'Determined', 'Optimistic', 'Diplomatic',
+            'Independent', 'Creative', 'Diligent', 'Visionary', 'Pragmatic',
+            'Ambitious', 'Compassionate', 'Reliable', 'Assertive', 'Humble'
+        ];
+
+        $bKeywordSeeded = false;
 
         for ($i = 0; $i < $totalRecords / $batchSize; $i++) {
             $personalities = [];
 
             for ($j = 0; $j < $batchSize; $j++) {
-                $lastSortOrder++;
+
+                $name = '';
+                if (!$bKeywordSeeded) {//seed one keyword data
+                    $name =  "キャビンアテンダント Personality";
+                    $bKeywordSeeded = true;
+                }
+                else //seed random name
+                    $name = $arrRandom[array_rand($arrRandom)];
 
                 $personalities[] = [
-                    'name' => "Personality $lastSortOrder", // Logical name
+                    'name' => $name, // Logical name
                     'created' => now(),
                     'modified' => now(),
                     'deleted' => null

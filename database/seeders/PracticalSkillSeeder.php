@@ -12,17 +12,30 @@ class PracticalSkillSeeder extends Seeder
         $batchSize = 1000; // Insert in batches for performance
         $totalRecords = 100000; // 100K rows
 
-        // Get the last sort_order from the database
-        $lastSortOrder = PracticalSkill::max('id') ?? 0;
+        $arrRandom = [
+            'Carpentry', 'Welding', 'Plumbing', 'Electrician Work', 'Automotive Repair',
+            'Cooking', 'Sewing', 'Painting', 'Machining', 'Gardening',
+            'First Aid', 'Woodworking', 'Metalworking', 'Baking', 'Horticulture',
+            'Tailoring', 'Handcrafting', 'Firefighting', 'Hairdressing', 'Masonry'
+        ];
+
+        $bKeywordSeeded = false;
 
         for ($i = 0; $i < $totalRecords / $batchSize; $i++) {
             $practicalSkills = [];
 
             for ($j = 0; $j < $batchSize; $j++) {
-                $lastSortOrder++;
+
+                $name = '';
+                if (!$bKeywordSeeded) {//seed one keyword data
+                    $name =  "キャビンアテンダント Personality";
+                    $bKeywordSeeded = true;
+                }
+                else //seed random name
+                    $name = $arrRandom[array_rand($arrRandom)];
 
                 $practicalSkills[] = [
-                    'name' => "Practical Skill $lastSortOrder", // Logical skill name
+                    'name' => $name, // Logical skill name
                     'created' => now(),
                     'modified' => now(),
                     'deleted' => null
