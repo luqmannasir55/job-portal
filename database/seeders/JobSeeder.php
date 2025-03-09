@@ -10,7 +10,7 @@ class JobSeeder extends Seeder
     public function run()
     {
         $batchSize = 1000; // Insert in batches for performance
-        $totalRecords = 600000; // 600K rows
+        $totalRecords = 100000; // 100K rows
 
         // Get the last sort_order from the database
         $lastSortOrder = Job::max('sort_order') ?? 0;

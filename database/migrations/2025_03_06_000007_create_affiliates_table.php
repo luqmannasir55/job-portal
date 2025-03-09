@@ -14,9 +14,12 @@ return new class extends Migration {
             $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
             $table->timestamp('deleted')->nullable();
         });
+        DB::statement("ALTER TABLE affiliates ADD FULLTEXT(name)");
+        //apply full text index
     }
 
     public function down() {
+        DB::statement("ALTER TABLE affiliates DROP INDEX name");
         Schema::dropIfExists('affiliates');
     }
 };

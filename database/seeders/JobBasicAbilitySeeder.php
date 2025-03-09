@@ -12,7 +12,7 @@ class JobBasicAbilitySeeder extends Seeder
     public function run()
     {
         $batchSize = 1000; // Insert in batches for performance
-        $totalRecords = 200000; // 200K rows
+        $totalRecords = 100000; // 100K rows
 
         $jobIds = Job::pluck('id')->toArray(); // Get all job IDs
         $abilityIds = BasicAbility::pluck('id')->toArray(); // Get all basic ability IDs

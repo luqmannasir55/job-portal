@@ -41,9 +41,13 @@ return new class extends Migration {
             $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
             $table->timestamp('deleted')->nullable();
         });
+
+        DB::statement("ALTER TABLE jobs ADD FULLTEXT(name, description, detail, business_skill, knowledge, location, activity)");
+        //apply full text index
     }
 
     public function down() {
+        DB::statement("ALTER TABLE jobs DROP INDEX name");
         Schema::dropIfExists('jobs');
     }
 };

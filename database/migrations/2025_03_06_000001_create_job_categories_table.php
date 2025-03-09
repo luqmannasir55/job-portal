@@ -15,9 +15,13 @@ return new class extends Migration {
             $table->timestamp('modified')->nullable()->useCurrentOnUpdate();
             $table->timestamp('deleted')->nullable();
         });
+
+        DB::statement("ALTER TABLE job_categories ADD FULLTEXT(name)");
+        //apply full text index
     }
 
     public function down() {
+        DB::statement("ALTER TABLE job_categories DROP INDEX name");
         Schema::dropIfExists('job_categories');
     }
 };
