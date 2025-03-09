@@ -16,15 +16,14 @@ vagrant ssh
 
 ```sh
 cd /var/www/html
-php artisan migrate --seed
-php artisan serve --host=0.0.0.0 --port=8000
+php artisan migrate
 ```
 
 *Each table in the database job-portal is randomlly seeded using Laravel's DatabaseSeeder
 
 ## Enhancement to improve the performance of SQL Query
 
-1. Apply fulltext indexing (running this alter query might take some time)
+1. Apply fulltext indexing (these columns has already been altered during php artisan migrate)
    ```sql
    ALTER TABLE jobs ADD FULLTEXT(name, description, detail, business_skill, knowledge, location, activity);
    ALTER TABLE job_categories ADD FULLTEXT(name);
