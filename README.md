@@ -1,5 +1,12 @@
 # SQL Enhancement
 
+## Technologies Used
+- **Database setup & data seeding:** PHP 8 (Laravel 12) 
+- **Database:** MySQL 8
+- **Virtualization:** Vagrant
+
+## Installation & Setup
+  
 ### Clone the Repository
 ```sh
 git clone https://github.com/luqmannasir55/job-portal.git
@@ -208,7 +215,7 @@ LIMIT 50 OFFSET 0;
 
 ```
 
-### Result
+## Result
 The comparison of execution for both queries are shown below :
 
 ![querytime](https://github.com/user-attachments/assets/bb99efc4-3a14-4f13-adaf-a6c764ffcb85)
