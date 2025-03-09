@@ -204,3 +204,9 @@ ORDER BY match_source DESC, Jobs.sort_order DESC -- SORT BY MORE MATCHES TO APPE
 LIMIT 50 OFFSET 0;
 
 ```
+
+### Result
+The comparison of execution for both queries are shown below :
+
+![querytime](https://github.com/user-attachments/assets/bb99efc4-3a14-4f13-adaf-a6c764ffcb85)
+
