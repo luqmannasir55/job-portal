@@ -36,15 +36,27 @@ php artisan migrate
 
 2. Enhanced SQL Query
 
-```sql  
+```sql
+
 -- PRE-FILTER QUERY
--- APPLY PRE-FILTER WITH OTHER TABLES BEFORE JOINING WITH THE MAIN QUERY
+-- APPLY PRE-FILTER WITH MATCHES IN EACH TABLES BEFORE JOINING WITH THE MAIN QUERY
 WITH MatchedJobs AS (
-  SELECT id, 2 AS source_flag, 'jobs' AS source_table -- source_table TO INDICATE THE ORIGIN TABLE OF MATCHED JOB, source_flag IS USED IN THE MAIN QUERY FOR ORDERING THE JOBS THAT HAVE MORE MATCHES WILL APPEAR FIRST,  
-  FROM jobs -- PRIORITISE MATCHES FROM JOBS TABLE
-  WHERE MATCH(name, description, detail, business_skill, knowledge, location, activity)
-        AGAINST ('キャビンアテンダント' IN BOOLEAN MODE) -- USE MATCH AGAINST FOR BETTER PERFORMANCE COMPARED TO THE USE OF LIKE AND WILDCARD
+  SELECT id, 3 AS source_flag, 'jobs' AS source_table -- source_table TO INDICATE THE ORIGIN TABLE OF MATCHED JOB, source_flag IS USED IN THE MAIN QUERY FOR ORDERING THE JOBS THAT HAVE MORE MATCHES WILL APPEAR FIRST,
+  FROM jobs -- PRIORITISE MATCHES FROM JOBS TABLE, FOLLOWED BY CATEGORIES & TYPES, THEN OTHERS
+  WHERE MATCH(name, description, detail, business_skill, knowledge, location, activity, salary_statistic_group, salary_range_remarks, restriction, remarks) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE) -- USE MATCH AGAINST FOR BETTER PERFORMANCE COMPARED TO THE USE OF LIKE AND WILDCARD
 ), 
+MatchedJobCategories AS (
+  SELECT Jobs.id AS job_id, 2 AS source_flag, 'job_categories' AS source_table
+  FROM jobs Jobs
+  INNER JOIN job_categories JobCategories ON JobCategories.id = Jobs.job_category_id
+  WHERE MATCH (JobCategories.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
+),
+MatchedJobTypes AS (
+  SELECT Jobs.id AS job_id, 1 AS source_flag, 'job_types' AS source_table
+  FROM jobs Jobs
+  INNER JOIN job_types JobTypes ON JobTypes.id = Jobs.job_type_id
+  WHERE MATCH (JobTypes.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
+),
 MatchedPersonalities AS (
   SELECT JobsPersonalities.job_id, 1 AS source_flag, 'jobs_personalities' AS source_table
   FROM jobs_personalities JobsPersonalities
@@ -95,22 +107,26 @@ MatchedReqQualifications AS (
   WHERE MATCH (ReqQualifications.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
 ),
 AllMatchedJobs AS ( -- CONSOLIDATE ALL MATCHED JOBS TO A SINGLE TABLE (AllMatchedJobs)
-  SELECT job_id, SUM(source_flag) AS match_source, JSON_ARRAYAGG(source_table) AS source_table FROM ( -- SUM(source_flag) TO CALCULATE HOW MANY MATCHES OCCURRED, source_table TO CONSOLIDATE TABLE ORIGIN 
+  SELECT job_id, SUM(source_flag) AS match_source, JSON_ARRAYAGG(source_table) AS source_table FROM ( -- SUM(source_flag) TO CALCULATE HOW MANY MATCHES OCCURRED, source_table TO CONSOLIDATE TABLE ORIGIN
     SELECT job_id, source_flag, source_table FROM MatchedPersonalities
     UNION ALL
-    SELECT job_id, source_flag,source_table FROM MatchedPracticalSkills
+    SELECT job_id, source_flag, source_table FROM MatchedPracticalSkills
     UNION ALL
-    SELECT job_id, source_flag,source_table FROM MatchedBasicAbilities
+    SELECT job_id, source_flag, source_table FROM MatchedBasicAbilities
     UNION ALL
-    SELECT job_id, source_flag,source_table FROM MatchedTools
+    SELECT job_id, source_flag, source_table FROM MatchedTools
     UNION ALL
-    SELECT job_id, source_flag,source_table FROM MatchedCareerPaths
+    SELECT job_id, source_flag, source_table FROM MatchedCareerPaths
     UNION ALL
-    SELECT job_id, source_flag,source_table FROM MatchedRecQualifications
+    SELECT job_id, source_flag, source_table FROM MatchedRecQualifications
     UNION ALL
-    SELECT job_id, source_flag,source_table FROM MatchedReqQualifications
+    SELECT job_id, source_flag, source_table FROM MatchedReqQualifications
     UNION ALL
-    SELECT id AS job_id, source_flag,source_table FROM MatchedJobs
+    SELECT job_id, source_flag, source_table FROM MatchedJobTypes
+    UNION ALL
+    SELECT job_id, source_flag, source_table FROM MatchedJobCategories
+    UNION ALL
+    SELECT id AS job_id, source_flag, source_table FROM MatchedJobs
   ) AS sources
   GROUP BY job_id
 )
@@ -157,7 +173,7 @@ AllMatchedJobs.match_source,
 AllMatchedJobs.source_table
 
 FROM jobs Jobs
-INNER JOIN job_categories JobCategories  ON JobCategories.id = Jobs.job_category_id AND JobCategories.deleted IS NULL
+INNER JOIN job_categories JobCategories ON JobCategories.id = Jobs.job_category_id AND JobCategories.deleted IS NULL
 INNER JOIN job_types JobTypes ON JobTypes.id = Jobs.job_type_id AND JobTypes.deleted IS NULL
 INNER JOIN AllMatchedJobs ON Jobs.id = AllMatchedJobs.job_id -- JOIN WITH PRE-FILTERED TABLE
 
@@ -165,4 +181,5 @@ WHERE Jobs.publish_status = 1 AND Jobs.deleted IS NULL
 
 ORDER BY match_source DESC, Jobs.sort_order DESC -- SORT BY MORE MATCHES TO APPEAR FIRST,THEN CUSTOM SORTING FROM DATABASE
 LIMIT 50 OFFSET 0;
+
 ```
