@@ -208,7 +208,7 @@ INNER JOIN job_categories JobCategories ON JobCategories.id = Jobs.job_category_
 INNER JOIN job_types JobTypes ON JobTypes.id = Jobs.job_type_id AND JobTypes.deleted IS NULL
 INNER JOIN AllMatchedJobs ON Jobs.id = AllMatchedJobs.job_id -- JOIN WITH PRE-FILTERED TABLE
 
--- WHERE Jobs.publish_status = 1 AND Jobs.deleted IS NULL
+WHERE Jobs.publish_status = 1 AND Jobs.deleted IS NULL
 
 ORDER BY match_source DESC, Jobs.sort_order DESC -- SORT BY MORE MATCHES TO APPEAR FIRST,THEN CUSTOM SORTING FROM DATABASE
 LIMIT 50 OFFSET 0;
