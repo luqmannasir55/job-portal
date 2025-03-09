@@ -65,67 +65,70 @@ WITH MatchedJobs AS (
   SELECT id, 3 AS source_flag, 'jobs' AS source_table -- source_table TO INDICATE THE ORIGIN TABLE OF MATCHED JOB, source_flag IS USED IN THE MAIN QUERY FOR ORDERING THE JOBS THAT HAVE MORE MATCHES WILL APPEAR FIRST,
   FROM jobs -- PRIORITISE MATCHES FROM JOBS TABLE, FOLLOWED BY CATEGORIES & TYPES, THEN OTHERS
   WHERE MATCH(name, description, detail, business_skill, knowledge, location, activity, salary_statistic_group, salary_range_remarks, restriction, remarks) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE) -- USE MATCH AGAINST FOR BETTER PERFORMANCE COMPARED TO THE USE OF LIKE AND WILDCARD
+  AND publish_status = 1 AND deleted IS NULL
 ), 
 MatchedJobCategories AS (
   SELECT Jobs.id AS job_id, 2 AS source_flag, 'job_categories' AS source_table
   FROM jobs Jobs
   INNER JOIN job_categories JobCategories ON JobCategories.id = Jobs.job_category_id
   WHERE MATCH (JobCategories.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
+  AND Jobs.deleted IS NULL AND JobCategories.deleted IS NULL
 ),
 MatchedJobTypes AS (
   SELECT Jobs.id AS job_id, 1 AS source_flag, 'job_types' AS source_table
   FROM jobs Jobs
   INNER JOIN job_types JobTypes ON JobTypes.id = Jobs.job_type_id
   WHERE MATCH (JobTypes.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
+  AND Jobs.deleted IS NULL AND JobTypes.deleted IS NULL
 ),
 MatchedPersonalities AS (
   SELECT JobsPersonalities.job_id, 1 AS source_flag, 'jobs_personalities' AS source_table
   FROM jobs_personalities JobsPersonalities
-  INNER JOIN personalities Personalities 
-      ON Personalities.id = JobsPersonalities.personality_id
+  INNER JOIN personalities Personalities ON Personalities.id = JobsPersonalities.personality_id
   WHERE MATCH (Personalities.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
+  AND JobsPersonalities.deleted IS NULL AND Personalities.deleted IS NULL
 ),
 MatchedPracticalSkills AS (
   SELECT JobsPracticalSkills.job_id, 1 AS source_flag, 'jobs_practical_skills' AS source_table 
   FROM jobs_practical_skills JobsPracticalSkills
-  INNER JOIN practical_skills PracticalSkills 
-      ON PracticalSkills.id = JobsPracticalSkills.practical_skill_id
+  INNER JOIN practical_skills PracticalSkills ON PracticalSkills.id = JobsPracticalSkills.practical_skill_id
   WHERE MATCH (PracticalSkills.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
+  AND JobsPracticalSkills.deleted IS NULL AND PracticalSkills.deleted IS NULL
 ),
 MatchedBasicAbilities AS (
   SELECT JobsBasicAbilities.job_id, 1 AS source_flag, 'jobs_basic_abilities' AS source_table 
   FROM jobs_basic_abilities JobsBasicAbilities
-  INNER JOIN basic_abilities BasicAbilities 
-      ON BasicAbilities.id = JobsBasicAbilities.basic_ability_id
+  INNER JOIN basic_abilities BasicAbilities ON BasicAbilities.id = JobsBasicAbilities.basic_ability_id
   WHERE MATCH (BasicAbilities.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
+  AND JobsBasicAbilities.deleted IS NULL AND BasicAbilities.deleted IS NULL
 ),
 MatchedTools AS (
   SELECT JobsTools.job_id, 1 AS source_flag, 'jobs_tools' AS source_table
   FROM jobs_tools JobsTools
-  INNER JOIN affiliates Tools 
-      ON Tools.id = JobsTools.affiliate_id AND Tools.type = 1
+  INNER JOIN affiliates Tools ON Tools.id = JobsTools.affiliate_id AND Tools.type = 1
   WHERE MATCH (Tools.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
+  AND JobsTools.deleted IS NULL AND Tools.deleted IS NULL
 ),
 MatchedCareerPaths AS (
   SELECT JobsCareerPaths.job_id, 1 AS source_flag, 'jobs_career_paths' AS source_table 
   FROM jobs_career_paths JobsCareerPaths
-  INNER JOIN affiliates CareerPaths 
-      ON CareerPaths.id = JobsCareerPaths.affiliate_id AND CareerPaths.type = 3
+  INNER JOIN affiliates CareerPaths ON CareerPaths.id = JobsCareerPaths.affiliate_id AND CareerPaths.type = 3
   WHERE MATCH (CareerPaths.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
+  AND JobsCareerPaths.deleted IS NULL AND CareerPaths.deleted IS NULL
 ),
 MatchedRecQualifications AS (
   SELECT JobsRecQualifications.job_id, 1 AS source_flag, 'jobs_rec_qualifications' AS source_table
   FROM jobs_rec_qualifications JobsRecQualifications
-  INNER JOIN affiliates RecQualifications 
-      ON RecQualifications.id = JobsRecQualifications.affiliate_id AND RecQualifications.type = 2
+  INNER JOIN affiliates RecQualifications ON RecQualifications.id = JobsRecQualifications.affiliate_id AND RecQualifications.type = 2
   WHERE MATCH (RecQualifications.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
+  AND JobsRecQualifications.deleted IS NULL AND RecQualifications.deleted IS NULL
 ),
 MatchedReqQualifications AS (
   SELECT JobsReqQualifications.job_id, 1 AS source_flag, 'jobs_req_qualifications' AS source_table 
   FROM jobs_req_qualifications JobsReqQualifications
-  INNER JOIN affiliates ReqQualifications 
-      ON ReqQualifications.id = JobsReqQualifications.affiliate_id AND ReqQualifications.type = 2
+  INNER JOIN affiliates ReqQualifications ON ReqQualifications.id = JobsReqQualifications.affiliate_id AND ReqQualifications.type = 2
   WHERE MATCH (ReqQualifications.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
+  AND JobsReqQualifications.deleted IS NULL AND ReqQualifications.deleted IS NULL
 ),
 AllMatchedJobs AS ( -- CONSOLIDATE ALL MATCHED JOBS TO A SINGLE TABLE (AllMatchedJobs)
   SELECT job_id, SUM(source_flag) AS match_source, JSON_ARRAYAGG(source_table) AS source_table FROM ( -- SUM(source_flag) TO CALCULATE HOW MANY MATCHES OCCURRED, source_table TO CONSOLIDATE TABLE ORIGIN
@@ -198,7 +201,7 @@ INNER JOIN job_categories JobCategories ON JobCategories.id = Jobs.job_category_
 INNER JOIN job_types JobTypes ON JobTypes.id = Jobs.job_type_id AND JobTypes.deleted IS NULL
 INNER JOIN AllMatchedJobs ON Jobs.id = AllMatchedJobs.job_id -- JOIN WITH PRE-FILTERED TABLE
 
-WHERE Jobs.publish_status = 1 AND Jobs.deleted IS NULL
+-- WHERE Jobs.publish_status = 1 AND Jobs.deleted IS NULL
 
 ORDER BY match_source DESC, Jobs.sort_order DESC -- SORT BY MORE MATCHES TO APPEAR FIRST,THEN CUSTOM SORTING FROM DATABASE
 LIMIT 50 OFFSET 0;
