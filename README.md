@@ -19,13 +19,34 @@ cd /var/www/html
 php artisan migrate
 ```
 
-*Each table in the database job-portal is randomlly seeded using Laravel's DatabaseSeeder
+### Seeding Datas into the DB:
+
+- Run this command one by one and in order (each seeder will insert 100000 rows in the respective tables)
+- One keyword data (キャビンアテンダント) will be inserted in affiliate, basic_abilities, job_categories, jobs, jobs_types, personalities, practical_skills table to test this query
+
+```sh
+php artisan db:seed --class=AffiliateSeeder
+php artisan db:seed --class=JobCategorySeeder
+php artisan db:seed --class=JobTypeSeeder
+php artisan db:seed --class=PersonalitySeeder
+php artisan db:seed --class=PracticalSkillSeeder
+php artisan db:seed --class=BasicAbilitySeeder
+php artisan db:seed --class=JobSeeder
+php artisan db:seed --class=JobBasicAbilitySeeder
+php artisan db:seed --class=JobCareerPathSeeder
+php artisan db:seed --class=JobPersonalitySeeder
+php artisan db:seed --class=JobPracticalSkillSeeder
+php artisan db:seed --class=JobRecQualificationSeeder
+php artisan db:seed --class=JobReqQualificationSeeder
+php artisan db:seed --class=JobToolSeeder
+```
+
 
 ## Enhancement to improve the performance of SQL Query
 
-1. Apply fulltext indexing (these columns has already been altered during php artisan migrate)
+1. Apply fulltext indexing (these columns has already been altered in the respective tables during php artisan migrate)
    ```sql
-   ALTER TABLE jobs ADD FULLTEXT(name, description, detail, business_skill, knowledge, location, activity);
+   ALTER TABLE jobs ADD FULLTEXT(name, description, detail, business_skill, knowledge, location, activity, salary_statistic_group, salary_range_remarks, restriction, remarks);
    ALTER TABLE job_categories ADD FULLTEXT(name);
    ALTER TABLE job_types ADD FULLTEXT(name);
    ALTER TABLE personalities ADD FULLTEXT(name);
