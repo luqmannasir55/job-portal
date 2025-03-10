@@ -69,41 +69,41 @@ php artisan db:seed --class=JobToolSeeder
 -- PRE-FILTER QUERY
 -- APPLY PRE-FILTER WITH MATCHES IN EACH TABLES BEFORE JOINING WITH THE MAIN QUERY
 WITH MatchedJobs AS (
-  SELECT id, 3 AS source_flag, 'jobs' AS source_table -- source_table TO INDICATE THE ORIGIN TABLE OF MATCHED JOB, source_flag IS USED IN THE MAIN QUERY FOR ORDERING THE JOBS THAT HAVE MORE MATCHES WILL APPEAR FIRST,
-  FROM jobs -- PRIORITISE MATCHES FROM JOBS TABLE, FOLLOWED BY CATEGORIES & TYPES, THEN OTHERS
+  SELECT id, 5 AS source_flag, 'jobs' AS source_table -- source_table TO INDICATE THE ORIGIN TABLE OF MATCHED JOB, source_flag IS USED IN THE MAIN QUERY FOR ORDERING THE JOBS THAT HAVE MORE MATCHES WILL APPEAR FIRST,
+  FROM jobs -- PRIORITISE MATCHES FROM JOBS, FOLLOWED BY CATEGORIES, TYPES, PRACTICAL SKILLS & BASIC ABILITIES, THEN OTHERS
   WHERE MATCH(name, description, detail, business_skill, knowledge, location, activity, salary_statistic_group, salary_range_remarks, restriction, remarks) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE) -- USE MATCH AGAINST FOR BETTER PERFORMANCE COMPARED TO THE USE OF LIKE AND WILDCARD
   AND publish_status = 1 AND deleted IS NULL
 ), 
 MatchedJobCategories AS (
-  SELECT Jobs.id AS job_id, 2 AS source_flag, 'job_categories' AS source_table
+  SELECT Jobs.id AS job_id, 3 AS source_flag, 'job_categories' AS source_table
   FROM jobs Jobs
   INNER JOIN job_categories JobCategories ON JobCategories.id = Jobs.job_category_id
   WHERE MATCH (JobCategories.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
   AND Jobs.deleted IS NULL AND JobCategories.deleted IS NULL
 ),
 MatchedJobTypes AS (
-  SELECT Jobs.id AS job_id, 1 AS source_flag, 'job_types' AS source_table
+  SELECT Jobs.id AS job_id, 2 AS source_flag, 'job_types' AS source_table
   FROM jobs Jobs
   INNER JOIN job_types JobTypes ON JobTypes.id = Jobs.job_type_id
   WHERE MATCH (JobTypes.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
   AND Jobs.deleted IS NULL AND JobTypes.deleted IS NULL
 ),
 MatchedPersonalities AS (
-  SELECT JobsPersonalities.job_id, 1 AS source_flag, 'jobs_personalities' AS source_table
+  SELECT JobsPersonalities.job_id, 2 AS source_flag, 'jobs_personalities' AS source_table
   FROM jobs_personalities JobsPersonalities
   INNER JOIN personalities Personalities ON Personalities.id = JobsPersonalities.personality_id
   WHERE MATCH (Personalities.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
   AND JobsPersonalities.deleted IS NULL AND Personalities.deleted IS NULL
 ),
 MatchedPracticalSkills AS (
-  SELECT JobsPracticalSkills.job_id, 1 AS source_flag, 'jobs_practical_skills' AS source_table 
+  SELECT JobsPracticalSkills.job_id, 2 AS source_flag, 'jobs_practical_skills' AS source_table 
   FROM jobs_practical_skills JobsPracticalSkills
   INNER JOIN practical_skills PracticalSkills ON PracticalSkills.id = JobsPracticalSkills.practical_skill_id
   WHERE MATCH (PracticalSkills.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
   AND JobsPracticalSkills.deleted IS NULL AND PracticalSkills.deleted IS NULL
 ),
 MatchedBasicAbilities AS (
-  SELECT JobsBasicAbilities.job_id, 1 AS source_flag, 'jobs_basic_abilities' AS source_table 
+  SELECT JobsBasicAbilities.job_id, 2 AS source_flag, 'jobs_basic_abilities' AS source_table 
   FROM jobs_basic_abilities JobsBasicAbilities
   INNER JOIN basic_abilities BasicAbilities ON BasicAbilities.id = JobsBasicAbilities.basic_ability_id
   WHERE MATCH (BasicAbilities.name) AGAINST ('キャビンアテンダント' IN BOOLEAN MODE)
